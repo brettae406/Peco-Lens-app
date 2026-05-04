@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peco Lens</title>
+
+  <meta name="theme-color" content="#0d0d0d" />
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(console.error);
+      });
+    }
+  </script>
+
+  <script type="module" src="app.js"></script>
+</head>
+
+<body>
+
+  <!-- LOGIN LAYER -->
+  <div id="loginLayer" class="layer active">
+    <h1>Peco Lens</h1>
+    <div class="section-label">Login</div>
+    <input id="loginUsername" placeholder="Username" />
+    <input id="loginPasscode" type="password" placeholder="Passcode" />
+    <button class="menu-button" onclick="login()">Login</button>
+    <div id="loginError" class="info-box hidden"></div>
+    <div class="info-box">
+      Default admin:<br>
+      Username: brett<br>
+      Passcode: 1214
+    </div>
+  </div>
+
+  <!-- MAIN MENU: 5-LAYER SYSTEM -->
+  <div id="mainMenu" class="layer">
+    <h1>Peco Lens</h1>
+    <div class="section-label">Core Layers</div>
+    <button id="btnLens" class="menu-button" onclick="openLayer('lensLayer')">Lens</button>
+    <button id="btnTools" class="menu-button" onclick="openLayer('toolsLayer')">Tools</button>
+    <button id="btnMaintenance" class="menu-button" onclick="openLayer('maintenanceLayer')">Maintenance</button>
+    <button id="btnMessaging" class="menu-button" onclick="openLayer('messagingLayer')">Messaging</button>
+    <button id="btnSettings" class="menu-button" onclick="openLayer('settingsLayer')">Settings</button>
+  </div>
+
+  <!-- LENS LAYER -->
+  <div id="lensLayer" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('mainMenu')">←</button>
+      <h2>Lens</h2>
+    </div>
+
+    <div class="section-label">Live AR Lens</div>
+
+    <div class="lens-visual-container">
+      <video id="lensVideo" class="lens-base-image" autoplay playsinline></video>
+      <canvas id="lensOverlayCanvas" class="lens-overlay-canvas"></canvas>
+    </div>
+
+    <canvas id="lensCaptureCanvas" style="display:none;"></canvas>
+
+    <button class="menu-button" onclick="startLensCamera()">Start Camera</button>
+    <label class="overlay-toggle">
+      <input type="checkbox" id="overlayToggle" checked />
+      Show overlay highlights
+    </label>
+    <button class="menu-button" onclick="runLens()">Analyze Current Frame</button>
+
+    <div id="lensOutput" class="info-box"></div>
+
+    <div class="section-label">Other Lens Modes</div>
+    <button class="menu-button" onclick="showInfo('aiLensInfo')">AI Lens</button>
+    <button class="menu-button" onclick="showInfo('thermalLensInfo')">Thermal View</button>
+    <button class="menu-button" onclick="showInfo('cutLensInfo')">MegaJet Cut Lens</button>
+    <button class="menu-button" onclick="showInfo('galleryLensInfo')">Gallery Lens</button>
+
+    <div id="aiLensInfo" class="info-box hidden">AI Lens: text-only analysis of issues and scenarios.</div>
+    <div id="thermalLensInfo" class="info-box hidden">Thermal View: placeholder for future thermal integration.</div>
+    <div id="cutLensInfo" class="info-box hidden">MegaJet Cut Lens: visual evaluation of cut quality.</div>
+    <div id="galleryLensInfo" class="info-box hidden">Gallery Lens: analyze stored images and videos.</div>
+
+    <div class="section-label">Component 3D Viewer</div>
+    <div class="model-viewer-wrapper">
+      <model-viewer id="componentViewer"
+                    src="component-example.glb"
+                    camera-controls
+                    auto-rotate
+                    exposure="1.0"
+                    environment-image="neutral"
+                    style="width: 100%; height: 260px; background:#111;">
+      </model-viewer>
+    </div>
+  </div>
+
+  <!-- TOOLS LAYER -->
+  <div id="toolsLayer" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('mainMenu')">←</button>
+      <h2>Tools</h2>
+    </div>
+
+    <div class="section-label">Diagnostics & Analysis</div>
+    <button class="menu-button" onclick="openLayer('diagnosticsPanel')">Diagnostics</button>
+    <button class="menu-button" onclick="openLayer('historyPanel')">Diagnostics History</button>
+
+    <div class="section-label">Visual Tools</div>
+    <button class="menu-button" onclick="showInfo('galleryToolsInfo')">Gallery</button>
+    <button class="menu-button" onclick="showInfo('viewerToolsInfo')">3D Viewer</button>
+    <button class="menu-button" onclick="showInfo('partsToolsInfo')">Part Gallery</button>
+
+    <div id="galleryToolsInfo" class="info-box hidden">Gallery: future image/video library for analysis.</div>
+    <div id="viewerToolsInfo" class="info-box hidden">3D Viewer: open component models from library.</div>
+    <div id="partsToolsInfo" class="info-box hidden">Part Gallery: visual references for parts and assemblies.</div>
+  </div>
+
+  <!-- MAINTENANCE LAYER -->
+  <div id="maintenanceLayer" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('mainMenu')">←</button>
+      <h2>Maintenance</h2>
+    </div>
+
+    <div class="section-label">Machine Profiles</div>
+    <button class="menu-button" onclick="openLayer('profilesPanel')">Machine Profiles</button>
+
+    <div class="section-label">Procedures & Analysis</div>
+    <button class="menu-button" onclick="showInfo('pmTasksInfo')">PM Tasks</button>
+    <button class="menu-button" onclick="showInfo('inspectionGuidesInfo')">Inspection Guides</button>
+    <button class="menu-button" onclick="showInfo('failureAnalysisInfo')">Failure Analysis</button>
+    <button class="menu-button" onclick="showInfo('componentHierarchyInfo')">Component Hierarchy</button>
+
+    <div id="pmTasksInfo" class="info-box hidden">PM Tasks: structured preventive maintenance task lists.</div>
+    <div id="inspectionGuidesInfo" class="info-box hidden">Inspection Guides: step-by-step inspection flows.</div>
+    <div id="failureAnalysisInfo" class="info-box hidden">Failure Analysis: root-cause and repeat failure tracking.</div>
+    <div id="componentHierarchyInfo" class="info-box hidden">Component Hierarchy: system → subsystem → component tree.</div>
+  </div>
+
+  <!-- MESSAGING LAYER -->
+  <div id="messagingLayer" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('mainMenu')">←</button>
+      <h2>Messaging</h2>
+    </div>
+
+    <div class="section-label">Technician Chat</div>
+    <button class="menu-button" onclick="openLayer('messagingPanel')">AI Technician Chat</button>
+
+    <div class="section-label">Channels (future)</div>
+    <button class="menu-button" onclick="showInfo('dmInfo')">Direct Messages</button>
+    <button class="menu-button" onclick="showInfo('groupInfo')">Group Channels</button>
+    <button class="menu-button" onclick="showInfo('machineChannelInfo')">Machine Channels</button>
+
+    <div id="dmInfo" class="info-box hidden">Direct Messages: technician-to-technician chat (future).</div>
+    <div id="groupInfo" class="info-box hidden">Group Channels: team-based channels (future).</div>
+    <div id="machineChannelInfo" class="info-box hidden">Machine Channels: machine-specific threads (future).</div>
+  </div>
+
+  <!-- SETTINGS LAYER -->
+  <div id="settingsLayer" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('mainMenu')">←</button>
+      <h2>Settings</h2>
+    </div>
+
+    <div class="section-label">User</div>
+    <div id="currentUserBox" class="info-box"></div>
+    <button class="menu-button" onclick="logout()">Logout</button>
+
+    <div class="section-label">Manage Users (Admin only)</div>
+    <button class="menu-button" onclick="openLayer('manageUsersLayer')">Manage Users</button>
+
+    <div class="section-label">System</div>
+    <div class="info-box">App Version: 1.0</div>
+
+    <div class="section-label">Appearance</div>
+    <div class="info-box">Dark industrial theme enabled.</div>
+  </div>
+
+  <!-- MANAGE USERS LAYER -->
+  <div id="manageUsersLayer" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('settingsLayer')">←</button>
+      <h2>Manage Users</h2>
+    </div>
+
+    <div class="section-label">Add User</div>
+    <input id="newUserName" placeholder="Username" />
+    <input id="newUserPasscode" placeholder="Passcode" />
+    <div class="info-box">
+      Permissions for new user:
+      <label><input type="checkbox" id="permLens" checked /> Lens</label><br>
+      <label><input type="checkbox" id="permTools" checked /> Tools</label><br>
+      <label><input type="checkbox" id="permMaintenance" checked /> Maintenance</label><br>
+      <label><input type="checkbox" id="permMessaging" checked /> Messaging</label><br>
+      <label><input type="checkbox" id="permSettings" /> Settings</label>
+    </div>
+    <button class="menu-button" onclick="addUser()">Add User</button>
+
+    <div class="section-label">Existing Users</div>
+    <div id="usersList"></div>
+  </div>
+
+  <!-- DIAGNOSTICS PANEL -->
+  <div id="diagnosticsPanel" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('toolsLayer')">←</button>
+      <h2>Diagnostics</h2>
+    </div>
+    <textarea id="diagInput" placeholder="Describe the issue..."></textarea>
+    <button class="menu-button" onclick="runDiagnostics()">Run Diagnostics</button>
+    <div id="diagOutput" class="info-box"></div>
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div id="historyPanel" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('toolsLayer')">←</button>
+      <h2>Diagnostics History</h2>
+    </div>
+    <div id="historyList"></div>
+  </div>
+
+  <!-- PROFILES PANEL -->
+  <div id="profilesPanel" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('maintenanceLayer')">←</button>
+      <h2>Machine Profiles</h2>
+    </div>
+    <button class="menu-button" onclick="createProfile()">Add New Profile</button>
+    <div id="profileList"></div>
+  </div>
+
+  <!-- MESSAGING PANEL -->
+  <div id="messagingPanel" class="layer">
+    <div class="layer-header">
+      <button class="back-button" onclick="openLayer('messagingLayer')">←</button>
+      <h2>AI Technician Chat</h2>
+    </div>
+    <textarea id="msgInput" placeholder="Ask something..."></textarea>
+    <button class="menu-button" onclick="sendMessage()">Send</button>
+    <div id="msgOutput" class="info-box"></div>
+  </div>
+
+</body>
+</html>
